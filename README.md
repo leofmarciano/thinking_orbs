@@ -15,14 +15,16 @@ Android, web and desktop.
 
 ## Install
 
+Published on [pub.dev](https://pub.dev/packages/thinking_orbs):
+
 ```yaml
 dependencies:
   thinking_orbs: ^0.1.0
 ```
 
-Not yet on pub.dev? Install straight from a
-[GitHub release tag](https://github.com/leofmarciano/thinking_orbs/releases)
-instead — see [CONTRIBUTING.md](CONTRIBUTING.md) for how releases are cut:
+Alternatively, install straight from a
+[GitHub release tag](https://github.com/leofmarciano/thinking_orbs/releases) —
+see [CONTRIBUTING.md](CONTRIBUTING.md) for how releases are cut:
 
 ```yaml
 dependencies:
