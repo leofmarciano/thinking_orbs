@@ -15,10 +15,14 @@ Android, web and desktop.
 
 ## Install
 
-Not published on pub.dev — install directly from a
-[GitHub release tag](https://github.com/leofmarciano/thinking_orbs/releases).
-Add to your `pubspec.yaml`, pinning `ref` to a released tag for a
-reproducible build:
+```yaml
+dependencies:
+  thinking_orbs: ^0.1.0
+```
+
+Not yet on pub.dev? Install straight from a
+[GitHub release tag](https://github.com/leofmarciano/thinking_orbs/releases)
+instead — see [CONTRIBUTING.md](CONTRIBUTING.md) for how releases are cut:
 
 ```yaml
 dependencies:

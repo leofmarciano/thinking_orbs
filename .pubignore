@@ -1,0 +1,33 @@
+# NOTE: when this file exists, `dart pub publish` uses it INSTEAD OF
+# .gitignore (not additively) — so every exclusion needed for a clean
+# archive has to be listed here explicitly, duplicated from .gitignore.
+
+# Dart / Flutter build artifacts
+.dart_tool/
+.packages
+build/
+pubspec.lock
+example/.dart_tool/
+example/build/
+
+# IDE
+.idea/
+*.iml
+
+# The original TypeScript/React source this package ports from — kept
+# in the workspace for reference, never part of the published archive.
+thinking-orbs/
+
+# Platform scaffolding isn't needed to render pub.dev's Example tab
+# (which only reads example/lib + example/pubspec.yaml) — keep the
+# published archive lean.
+example/android/
+example/ios/
+example/web/
+example/macos/
+example/linux/
+example/windows/
+example/.metadata
+
+# Visual-diff helper, not part of the public API surface.
+test/preview_render.dart

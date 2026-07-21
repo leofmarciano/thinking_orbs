@@ -1,0 +1,21 @@
+# Publishes `thinking_orbs` to pub.dev via OIDC — no long-lived tokens
+# stored in this repo. Requires a one-time setup on pub.dev first; see
+# CONTRIBUTING.md.
+#
+# Triggered by pushing a tag matching the pub.dev "Automated publishing"
+# tag pattern (v{{version}}), e.g.:
+#   git tag v0.1.0 && git push origin v0.1.0
+
+name: Publish to pub.dev
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+
+jobs:
+  publish:
+    permissions:
+      id-token: write # required for pub.dev's OIDC handshake
+      contents: read
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1

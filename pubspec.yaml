@@ -4,8 +4,9 @@ description: >-
   two sizes, auto dark/light. A Dart/Flutter reimplementation of Jakub
   Antalik's thinking-orbs.
 version: 0.1.0
-homepage: https://github.com/Jakubantalik/thinking-orbs
-repository: https://github.com/leofmarciano/thinking-orbs-flutter
+homepage: https://github.com/leofmarciano/thinking_orbs
+repository: https://github.com/leofmarciano/thinking_orbs
+issue_tracker: https://github.com/leofmarciano/thinking_orbs/issues
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
