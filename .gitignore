@@ -1,0 +1,15 @@
+# Dart / Flutter
+.dart_tool/
+.packages
+build/
+pubspec.lock
+
+# Example app generated artifacts
+example/.dart_tool/
+example/build/
+
+# IDE
+.idea/
+*.iml
+
+thinking-orbs/
