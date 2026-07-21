@@ -15,14 +15,20 @@ Android, web and desktop.
 
 ## Install
 
-Add to your `pubspec.yaml`:
+Not published on pub.dev — install directly from a
+[GitHub release tag](https://github.com/leofmarciano/thinking_orbs/releases).
+Add to your `pubspec.yaml`, pinning `ref` to a released tag for a
+reproducible build:
 
 ```yaml
 dependencies:
   thinking_orbs:
     git:
-      url: https://github.com/leofmarciano/thinking-orbs-flutter.git
+      url: https://github.com/leofmarciano/thinking_orbs.git
+      ref: v0.1.0 # pin to a release tag; omit to track main
 ```
+
+Then run `flutter pub get`.
 
 ## Quick start
 
