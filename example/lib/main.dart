@@ -37,7 +37,8 @@ class _OrbsPlaygroundAppState extends State<OrbsPlaygroundApp> {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: _dark ? Brightness.dark : Brightness.light,
-        scaffoldBackgroundColor: _dark ? const Color(0xFF09090B) : const Color(0xFFFAFAFA),
+        scaffoldBackgroundColor:
+            _dark ? const Color(0xFF09090B) : const Color(0xFFFAFAFA),
         useMaterial3: true,
       ),
       home: Scaffold(
@@ -58,47 +59,81 @@ class _OrbsPlaygroundAppState extends State<OrbsPlaygroundApp> {
           ],
         ),
         body: SafeArea(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Row(
-                  children: [
-                    const Text('speed'),
-                    Expanded(
-                      child: Slider(
-                        value: _speed,
-                        min: 0.25,
-                        max: 3,
-                        divisions: 11,
-                        label: '${_speed.toStringAsFixed(2)}x',
-                        onChanged: (v) => setState(() => _speed = v),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final horizontalPadding =
+                  constraints.maxWidth < 600 ? 16.0 : 24.0;
+              return Column(
+                children: [
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1120),
+                      child: Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: horizontalPadding),
+                        child: Row(
+                          children: [
+                            const Text('speed'),
+                            Expanded(
+                              child: Slider(
+                                value: _speed,
+                                min: 0.25,
+                                max: 3,
+                                divisions: 11,
+                                label: '${_speed.toStringAsFixed(2)}x',
+                                onChanged: (v) => setState(() => _speed = v),
+                              ),
+                            ),
+                            SizedBox(
+                              width: 52,
+                              child: Text(
+                                '${_speed.toStringAsFixed(2)}x',
+                                textAlign: TextAlign.end,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    Text('${_speed.toStringAsFixed(2)}x'),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: GridView.count(
-                  crossAxisCount: 2,
-                  padding: const EdgeInsets.all(16),
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  children: [
-                    for (final state in OrbState.values)
-                      _OrbCard(
-                        state: state,
-                        label: _labels[state]!,
-                        theme: _dark ? OrbTheme.dark : OrbTheme.light,
-                        speed: _speed,
-                        paused: _paused,
-                        dark: _dark,
+                  ),
+                  Expanded(
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1120),
+                        child: GridView.builder(
+                          padding: EdgeInsets.fromLTRB(
+                            horizontalPadding,
+                            16,
+                            horizontalPadding,
+                            24,
+                          ),
+                          gridDelegate:
+                              const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 380,
+                            mainAxisExtent: 220,
+                            mainAxisSpacing: 16,
+                            crossAxisSpacing: 16,
+                          ),
+                          itemCount: OrbState.values.length,
+                          itemBuilder: (context, index) {
+                            final state = OrbState.values[index];
+                            return _OrbCard(
+                              key: ValueKey('orb-card-${state.name}'),
+                              state: state,
+                              label: _labels[state]!,
+                              theme: _dark ? OrbTheme.dark : OrbTheme.light,
+                              speed: _speed,
+                              paused: _paused,
+                              dark: _dark,
+                            );
+                          },
+                        ),
                       ),
-                  ],
-                ),
-              ),
-            ],
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -108,6 +143,7 @@ class _OrbsPlaygroundAppState extends State<OrbsPlaygroundApp> {
 
 class _OrbCard extends StatelessWidget {
   const _OrbCard({
+    super.key,
     required this.state,
     required this.label,
     required this.theme,
