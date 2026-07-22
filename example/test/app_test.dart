@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:thinking_orbs/thinking_orbs.dart';
 import 'package:thinking_orbs_example/main.dart';
 
 void main() {
@@ -48,7 +49,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('play, pause and theme controls update the demo', (tester) async {
+  testWidgets('play, pause, theme and color controls update the demo', (
+    tester,
+  ) async {
     await pumpAtSize(tester, const Size(1200, 900));
 
     expect(find.byTooltip('Pause'), findsOneWidget);
@@ -63,6 +66,11 @@ void main() {
     await tester.tap(find.byTooltip('Light mode'));
     await tester.pump();
     expect(find.byTooltip('Dark mode'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('color-emerald')));
+    await tester.pumpAndSettle();
+    final orb = tester.widget<ThinkingOrb>(find.byType(ThinkingOrb).first);
+    expect(orb.color, const Color(0xFF34D399));
     expect(tester.takeException(), isNull);
   });
 }

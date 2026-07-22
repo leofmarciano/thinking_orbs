@@ -25,10 +25,11 @@ enum OrbSize {
 
 /// Theme mode.
 ///
-/// - [auto] (default) resolves from the enclosing [Theme] / [MediaQuery]
-///   brightness, live-updating on change.
+/// - [auto] (default) resolves from [MediaQuery.platformBrightness],
+///   live-updating on change.
 /// - [dark] / [light] pin the palette regardless of context.
 ///
 /// Dark renders light ink on the transparent canvas (for dark
-/// backgrounds); light renders dark ink (for light backgrounds).
+/// backgrounds); light renders dark ink (for light backgrounds). A non-null
+/// custom color on `ThinkingOrb` takes precedence over this setting.
 enum OrbTheme { auto, dark, light }

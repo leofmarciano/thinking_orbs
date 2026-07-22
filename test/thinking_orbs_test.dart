@@ -38,7 +38,8 @@ void main() {
       expect(r.opts['rSizeMul'], closeTo(2.4, 1e-9));
     });
 
-    test('globe/64 scales the lattice pair by sqrt(count) and merges extras', () {
+    test('globe/64 scales the lattice pair by sqrt(count) and merges extras',
+        () {
       // count 0.42: sqrt = 0.64807...; latRings = round(17*rt) = 11,
       // lonDensity = round(44*rt) = 29
       final r = resolvePreset(OrbState.searching, OrbSize.size64);
@@ -85,6 +86,14 @@ void main() {
             final canvas = Canvas(recorder);
             draw(canvas, size.px, t * resolved.speed, true, resolved.opts);
             draw(canvas, size.px, t * resolved.speed, false, resolved.opts);
+            draw(
+              canvas,
+              size.px,
+              t * resolved.speed,
+              true,
+              resolved.opts,
+              const Color(0xFF8B5CF6),
+            );
             recorder.endRecording();
           }
         }
@@ -135,6 +144,36 @@ void main() {
       );
       expect(tester.hasRunningAnimations, isTrue);
       await tester.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('accepts and updates a custom color', (tester) async {
+      const violet = Color(0xFF8B5CF6);
+      const emerald = Color(0xFF34D399);
+
+      await tester.pumpWidget(
+        const Directionality(
+          textDirection: TextDirection.ltr,
+          child: Center(
+            child: ThinkingOrb(color: violet, paused: true),
+          ),
+        ),
+      );
+      expect(
+          tester.widget<ThinkingOrb>(find.byType(ThinkingOrb)).color, violet);
+
+      await tester.pumpWidget(
+        const Directionality(
+          textDirection: TextDirection.ltr,
+          child: Center(
+            child: ThinkingOrb(color: emerald, paused: true),
+          ),
+        ),
+      );
+      expect(
+        tester.widget<ThinkingOrb>(find.byType(ThinkingOrb)).color,
+        emerald,
+      );
+      expect(tester.takeException(), isNull);
     });
   });
 }

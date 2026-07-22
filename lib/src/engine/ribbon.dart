@@ -8,7 +8,14 @@ import 'dart:ui';
 import 'core.dart';
 import 'profiles.dart';
 
-void drawRibbon(Canvas canvas, double size, double t, bool dark, ModeOpts o) {
+void drawRibbon(
+  Canvas canvas,
+  double size,
+  double t,
+  bool dark,
+  ModeOpts o, [
+  Color? color,
+]) {
   final cx = size / 2;
   final cy = size / 2;
   final bigR = (size / 2) * 0.78;
@@ -24,7 +31,8 @@ void drawRibbon(Canvas canvas, double size, double t, bool dark, ModeOpts o) {
     final d = fibDir(i, ghostN);
     final (px, py, z) = pt(d.$1 * bigR, d.$2 * bigR, d.$3 * bigR);
     final depth = (z / bigR + 1) / 2;
-    dots.add(Dot(x: px, y: py, z: z, r: 0.8 * rs, white: 0.78, a: 0.1 + 0.22 * depth));
+    dots.add(Dot(
+        x: px, y: py, z: z, r: 0.8 * rs, white: 0.78, a: 0.1 + 0.22 * depth));
   }
 
   // the band plane, precessing (frozen when spin=0)
@@ -65,11 +73,13 @@ void drawRibbon(Canvas canvas, double size, double t, bool dark, ModeOpts o) {
         x: px,
         y: py,
         z: zr,
-        r: ((o['rBase'] ?? 1.1) + (o['rDepth'] ?? 1.7) * depth) * (1 - 0.25 * edge) * rs,
+        r: ((o['rBase'] ?? 1.1) + (o['rDepth'] ?? 1.7) * depth) *
+            (1 - 0.25 * edge) *
+            rs,
         white: 0.52 - 0.44 * depth + 0.18 * edge,
         a: 0.4 + 0.6 * depth,
       ));
     }
   }
-  paintDots(canvas, dots, dark, o['rMin'] ?? 0.3);
+  paintDots(canvas, dots, dark, o['rMin'] ?? 0.3, color);
 }

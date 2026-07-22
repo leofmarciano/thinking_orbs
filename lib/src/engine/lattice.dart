@@ -13,7 +13,11 @@ import 'profiles.dart';
 // everything clicks back to solved, rests, repeats.
 
 class _Move {
-  _Move({required this.axis, required this.lo, required this.hi, required this.ang});
+  _Move(
+      {required this.axis,
+      required this.lo,
+      required this.hi,
+      required this.ang});
 
   final int axis; // 0 | 1 | 2
   final double lo;
@@ -102,7 +106,14 @@ List<_Move> _makeMoves(int count) {
 
 // --- Globe: lat/long field, a scan meridian sweeps — searching --------
 
-void drawGlobe(Canvas canvas, double size, double t, bool dark, ModeOpts o) {
+void drawGlobe(
+  Canvas canvas,
+  double size,
+  double t,
+  bool dark,
+  ModeOpts o, [
+  Color? color,
+]) {
   const spin = 0.5;
   final cx = size / 2;
   final cy = size / 2;
@@ -124,7 +135,8 @@ void drawGlobe(Canvas canvas, double size, double t, bool dark, ModeOpts o) {
     final lonCount = math.max(1, (cosLat.abs() * lonDensity).round());
     for (var lj = 0; lj < lonCount; lj++) {
       final lon = (lj / lonCount) * 2 * math.pi;
-      final (px, py, z) = pt(cosLat * math.cos(lon), sinLat, cosLat * math.sin(lon));
+      final (px, py, z) =
+          pt(cosLat * math.cos(lon), sinLat, cosLat * math.sin(lon));
       final depth = (z + 1) / 2;
       // the scan: a moving meridian read as a size ripple, not a shine
       final d = angleDelta(lon + t * spin, scan);
@@ -133,19 +145,29 @@ void drawGlobe(Canvas canvas, double size, double t, bool dark, ModeOpts o) {
         x: px,
         y: py,
         z: z,
-        r: ((o['rBase'] ?? 0.6) + (o['rDepth'] ?? 1.7) * depth + (o['rBoost'] ?? 1) * boost) * rs,
+        r: ((o['rBase'] ?? 0.6) +
+                (o['rDepth'] ?? 1.7) * depth +
+                (o['rBoost'] ?? 1) * boost) *
+            rs,
         white: (o['inkFar'] ?? 0.62) - (o['inkSpan'] ?? 0.54) * depth,
         // dimBase < 1 fades un-scanned dots so the meridian reads clearly
         a: dimBase + (1 - dimBase) * math.min(1.0, boost),
       ));
     }
   }
-  paintDots(canvas, dots, dark, o['rMin'] ?? 0.3);
+  paintDots(canvas, dots, dark, o['rMin'] ?? 0.3, color);
 }
 
 // --- Rubik: bands twist in quarter turns, scramble → solve — solving --
 
-void drawRubik(Canvas canvas, double size, double t, bool dark, ModeOpts o) {
+void drawRubik(
+  Canvas canvas,
+  double size,
+  double t,
+  bool dark,
+  ModeOpts o, [
+  Color? color,
+]) {
   final cx = size / 2;
   final cy = size / 2;
   final bigR = (size / 2) * 0.82;
@@ -177,17 +199,29 @@ void drawRubik(Canvas canvas, double size, double t, bool dark, ModeOpts o) {
         x: px,
         y: py,
         z: zr,
-        r: ((o['rBase'] ?? 0.6) + (o['rDepth'] ?? 1.7) * depth + (inActive ? (o['rActive'] ?? 0.3) : 0)) * rs,
-        white: (o['inkFar'] ?? 0.62) - (o['inkSpan'] ?? 0.54) * depth - (inActive ? 0.14 : 0),
+        r: ((o['rBase'] ?? 0.6) +
+                (o['rDepth'] ?? 1.7) * depth +
+                (inActive ? (o['rActive'] ?? 0.3) : 0)) *
+            rs,
+        white: (o['inkFar'] ?? 0.62) -
+            (o['inkSpan'] ?? 0.54) * depth -
+            (inActive ? 0.14 : 0),
       ));
     }
   }
-  paintDots(canvas, dots, dark, o['rMin'] ?? 0.3);
+  paintDots(canvas, dots, dark, o['rMin'] ?? 0.3, color);
 }
 
 // --- Wave: a waveform rolls through the rings — listening -------------
 
-void drawWave(Canvas canvas, double size, double t, bool dark, ModeOpts o) {
+void drawWave(
+  Canvas canvas,
+  double size,
+  double t,
+  bool dark,
+  ModeOpts o, [
+  Color? color,
+]) {
   final cx = size / 2;
   final cy = size / 2;
   // 0.76 base × 1.15 — the undulation pulls the sphere inward, so wave read
@@ -204,7 +238,8 @@ void drawWave(Canvas canvas, double size, double t, bool dark, ModeOpts o) {
     final cosLat = math.cos(lat);
     final sinLat = math.sin(lat);
     // two waves, different tempi — organic, never quite repeating
-    final w = 0.62 * math.sin(t * 2.1 - ri * 0.52) + 0.38 * math.sin(t * 1.27 + ri * 0.83);
+    final w = 0.62 * math.sin(t * 2.1 - ri * 0.52) +
+        0.38 * math.sin(t * 1.27 + ri * 0.83);
     final rr = bigR * (0.88 + 0.105 * w);
     final lonCount = math.max(1, (cosLat.abs() * lonDensity).round());
     for (var lj = 0; lj < lonCount; lj++) {
@@ -220,10 +255,12 @@ void drawWave(Canvas canvas, double size, double t, bool dark, ModeOpts o) {
         x: px,
         y: py,
         z: z,
-        r: ((o['rBase'] ?? 0.6) + (o['rDepth'] ?? 1.7) * depth) * (1 + 0.4 * crest) * rs,
+        r: ((o['rBase'] ?? 0.6) + (o['rDepth'] ?? 1.7) * depth) *
+            (1 + 0.4 * crest) *
+            rs,
         white: 0.66 - 0.56 * depth - 0.1 * crest,
       ));
     }
   }
-  paintDots(canvas, dots, dark, o['rMin'] ?? 0.3);
+  paintDots(canvas, dots, dark, o['rMin'] ?? 0.3, color);
 }

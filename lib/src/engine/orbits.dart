@@ -8,7 +8,14 @@ import 'dart:ui';
 import 'core.dart';
 import 'profiles.dart';
 
-void drawOrbits(Canvas canvas, double size, double t, bool dark, ModeOpts o) {
+void drawOrbits(
+  Canvas canvas,
+  double size,
+  double t,
+  bool dark,
+  ModeOpts o, [
+  Color? color,
+]) {
   final cx = size / 2;
   final cy = size / 2;
   final r = (size / 2) * 0.82;
@@ -79,5 +86,5 @@ void drawOrbits(Canvas canvas, double size, double t, bool dark, ModeOpts o) {
       ));
     }
   }
-  paintDots(canvas, dots, dark, o['rMin'] ?? 0.3);
+  paintDots(canvas, dots, dark, o['rMin'] ?? 0.3, color);
 }

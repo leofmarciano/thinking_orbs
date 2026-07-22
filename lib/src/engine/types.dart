@@ -8,9 +8,5 @@ export 'core.dart' show Dot;
 
 /// One frame painter: draws a mode onto a [Canvas] at logical-px `size`.
 typedef ModeDraw = void Function(
-  Canvas canvas,
-  double size,
-  double t,
-  bool dark,
-  ModeOpts opts,
-);
+    Canvas canvas, double size, double t, bool dark, ModeOpts opts,
+    [Color? color]);

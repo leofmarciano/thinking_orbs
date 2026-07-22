@@ -53,7 +53,8 @@ double angleDelta(double a, double b) {
 }
 
 /// Shared spin + tilt + orthographic projection.
-Projector makeProj(double yaw, double tilt, double cx, double cy, double scale) {
+Projector makeProj(
+    double yaw, double tilt, double cx, double cy, double scale) {
   final st = math.sin(tilt);
   final ct = math.cos(tilt);
   final sy = math.sin(yaw);
@@ -67,18 +68,34 @@ Projector makeProj(double yaw, double tilt, double cx, double cy, double scale) 
   };
 }
 
-/// Painter: z-sort far→near, matte grayscale dots. On dark substrates the
-/// ink value is mirrored (1 - white) so near dots read bright — the same
-/// depth language on an inverted substrate.
-void paintDots(Canvas canvas, List<Dot> dots, bool dark, [double rMin = 0.3]) {
+/// Painter: z-sort far→near, then render grayscale or custom-color dots.
+/// On dark substrates the monochrome ink value is mirrored (1 - white) so
+/// near dots read bright. Custom colors carry the same depth through opacity.
+void paintDots(
+  Canvas canvas,
+  List<Dot> dots,
+  bool dark, [
+  double rMin = 0.3,
+  Color? color,
+]) {
   dots.sort((a, b) => a.z.compareTo(b.z));
   final paint = Paint()..style = PaintingStyle.fill;
   for (final d in dots) {
     final alpha = d.a ?? 1;
     if (alpha < 0.02) continue;
     final w = d.white.clamp(0.0, 1.0);
-    final g = ((dark ? 1 - w : w) * 255).round();
-    paint.color = Color.fromRGBO(g, g, g, alpha.clamp(0.0, 1.0));
+    if (color != null) {
+      // Use the original ink strength as opacity so the supplied hue keeps
+      // the same near/far depth language on both light and dark substrates.
+      // `alpha` is retained for modes that intentionally fade ghost dots.
+      // ignore: deprecated_member_use
+      final colorAlpha = color.alpha;
+      final tintedAlpha = (colorAlpha * alpha * (1 - w)).round().clamp(0, 255);
+      paint.color = color.withAlpha(tintedAlpha);
+    } else {
+      final g = ((dark ? 1 - w : w) * 255).round();
+      paint.color = Color.fromRGBO(g, g, g, alpha.clamp(0.0, 1.0));
+    }
     canvas.drawCircle(Offset(d.x, d.y), math.max(rMin, d.r), paint);
   }
 }
