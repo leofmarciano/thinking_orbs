@@ -1,142 +1,262 @@
-# thinking_orbs (Flutter)
+# thinking_orbs for Flutter
 
-> A faithful Dart/Flutter reimplementation of
-> [**thinking-orbs**](https://github.com/Jakubantalik/thinking-orbs) by
-> [Jakub Antalik](https://github.com/Jakubantalik) — originally a React +
-> 2D-canvas library. This port recreates the entire module end to end
-> (engine math, presets, and all six animations, copied 1:1) so it can be
-> used in Flutter mobile apps. All animation design credit goes to the
-> original author. Original live demo: <https://orbs.jakubantalik.com>.
+[![pub package](https://img.shields.io/pub/v/thinking_orbs.svg)](https://pub.dev/packages/thinking_orbs)
+[![Flutter](https://img.shields.io/badge/Flutter-3.10%2B-02569B?logo=flutter)](https://flutter.dev)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Dotted thought-orb loading indicators for AI & agent UIs. Six hand-tuned
-animated states, each shipped at two purpose-tuned sizes, rendered with a
-plain `CustomPainter` — no shaders, no filters, identical pixels on iOS,
-Android, web and desktop.
+Dotted thought-orb loading indicators for AI and agent interfaces. The package
+ships six hand-tuned animations at two purpose-built sizes, rendered with a
+lightweight Flutter `CustomPainter` on a transparent background.
 
-## Install
+This is a faithful Dart/Flutter reimplementation of
+[Jakub Antalik's thinking-orbs](https://github.com/Jakubantalik/thinking-orbs),
+originally built for React and the browser 2D canvas. The Flutter engine and
+initial package were created by
+[Leonardo Marciano](https://github.com/leofmarciano). See
+[Credits and provenance](#credits-and-provenance) for the complete attribution.
 
-Published on [pub.dev](https://pub.dev/packages/thinking_orbs):
+## Highlights
+
+- Six distinct states: working, searching, solving, listening, composing, and
+  shaping.
+- Separate 64 px and 20 px tunings; the inline orb is not merely a scaled-down
+  copy.
+- Automatic light/dark monochrome rendering plus optional custom colors.
+- Adjustable speed and a pause control.
+- Built-in semantic labels and reduced-motion support.
+- One shared clock keeps multiple orbs in phase without rebuilding the widget
+  tree every frame.
+- No assets, shaders, platform channels, or native configuration.
+- Runs on Android, iOS, web, macOS, Windows, and Linux.
+
+## Installation
+
+Install the latest published release from
+[pub.dev](https://pub.dev/packages/thinking_orbs):
+
+```bash
+flutter pub add thinking_orbs
+```
+
+Or add it manually:
 
 ```yaml
 dependencies:
   thinking_orbs: ^0.1.0
 ```
 
-Alternatively, install straight from a
-[GitHub release tag](https://github.com/leofmarciano/thinking_orbs/releases) —
-see [CONTRIBUTING.md](CONTRIBUTING.md) for how releases are cut:
+Then import the package:
 
-```yaml
-dependencies:
-  thinking_orbs:
-    git:
-      url: https://github.com/leofmarciano/thinking_orbs.git
-      ref: v0.1.0 # pin to a release tag; omit to track main
+```dart
+import 'package:thinking_orbs/thinking_orbs.dart';
 ```
 
-Then run `flutter pub get`.
+> Custom `color` support is currently available on this development branch and
+> is intended for the next pub.dev release.
 
 ## Quick start
 
 ```dart
-import 'package:thinking_orbs/thinking_orbs.dart';
-
-Widget status() {
-  return const ThinkingOrb(state: OrbState.searching, size: OrbSize.size64);
-}
+const ThinkingOrb(
+  state: OrbState.searching,
+  size: OrbSize.size64,
+  semanticLabel: 'Searching documentation…',
+)
 ```
 
-## States
+The canvas is transparent, so the widget can be placed directly in a chat
+avatar, status row, button, card, or overlay.
 
-Six verbs an agent can be doing, each a distinct animation:
+## Animation states
+
+| State | Visual behavior | Typical use |
+| --- | --- | --- |
+| `OrbState.working` | Particles travel across tilted orbital paths | General processing |
+| `OrbState.searching` | A scan meridian sweeps a dotted globe | Search and retrieval |
+| `OrbState.solving` | Bands scramble and click back into place | Reasoning and solving |
+| `OrbState.listening` | A waveform rolls through latitude rings | Voice and audio input |
+| `OrbState.composing` | An undulating multi-band ribbon | Writing and generation |
+| `OrbState.shaping` | Circle → triangle → square outline morph | Structuring and design |
 
 ```dart
-ThinkingOrb(state: OrbState.working)    // particles on tilted orbits
-ThinkingOrb(state: OrbState.searching)  // a scan meridian sweeps a dotted globe
-ThinkingOrb(state: OrbState.solving)    // bands scramble, then click back solved
-ThinkingOrb(state: OrbState.listening)  // a waveform rolls through the rings
-ThinkingOrb(state: OrbState.composing)  // an undulating multi-band sash
-ThinkingOrb(state: OrbState.shaping)    // dotted outline: circle → triangle → square
+const ThinkingOrb(state: OrbState.working);
+const ThinkingOrb(state: OrbState.searching);
+const ThinkingOrb(state: OrbState.solving);
+const ThinkingOrb(state: OrbState.listening);
+const ThinkingOrb(state: OrbState.composing);
+const ThinkingOrb(state: OrbState.shaping);
 ```
 
 ## Sizes
 
-Two tuned presets — separate designs, not a scale factor. `OrbSize.size64`
-for chat-avatar scale, `OrbSize.size20` for inline-text scale. Each carries
-its own dot count, dot size and speed tuning:
+The package intentionally exposes two presets:
 
 ```dart
-ThinkingOrb(state: OrbState.working, size: OrbSize.size64)
-ThinkingOrb(state: OrbState.working, size: OrbSize.size20)
+const ThinkingOrb(size: OrbSize.size64); // chat-avatar scale
+const ThinkingOrb(size: OrbSize.size20); // inline-text scale
 ```
 
-## Theme
+Each preset has its own dot count, radius, density, and speed tuning. Wrap an
+orb in padding or a larger layout container instead of scaling the painter when
+you need a larger touch or visual area.
 
-Strictly monochrome — light ink for dark backgrounds, dark ink for light
-backgrounds:
+## Custom colors
+
+Pass any Flutter `Color` to tint the orb:
 
 ```dart
-ThinkingOrb(theme: OrbTheme.auto)   // default — follows the platform brightness
-ThinkingOrb(theme: OrbTheme.dark)   // pin: light dots for dark backgrounds
-ThinkingOrb(theme: OrbTheme.light)  // pin: dark dots for light backgrounds
+const ThinkingOrb(
+  state: OrbState.composing,
+  color: Color(0xFF8B5CF6),
+)
 ```
 
-`OrbTheme.auto` follows `MediaQuery.platformBrightness` (the OS setting,
-live-updating — the analogue of the original's `prefers-color-scheme`).
-Apps that drive their own light/dark theme independently of the OS should
-pin `OrbTheme.dark` / `OrbTheme.light` from their theme state.
+The supplied hue is not applied as a flat overlay. The renderer converts the
+original near/far ink strength into opacity, preserving depth shading and the
+intentional fades used by ghost paths and background dots. The color's own
+alpha channel is respected as well.
 
-## Other props
+When `color` is non-null it takes precedence over `theme`. Set it back to null
+to restore the original monochrome palette:
+
+```dart
+ThinkingOrb(
+  color: useBrandColor ? brandColor : null,
+  theme: OrbTheme.auto,
+)
+```
+
+Choose a color with enough contrast against the surface behind the transparent
+orb. The package deliberately does not guess or modify your brand color.
+
+## Monochrome themes
+
+Without a custom color, the original monochrome renderer follows the platform
+brightness or a pinned theme:
+
+```dart
+const ThinkingOrb(theme: OrbTheme.auto);  // follows platform brightness
+const ThinkingOrb(theme: OrbTheme.dark);  // light ink on dark surfaces
+const ThinkingOrb(theme: OrbTheme.light); // dark ink on light surfaces
+```
+
+`OrbTheme.auto` follows `MediaQuery.platformBrightness` and updates when the
+platform setting changes. Apps whose theme is independent of the OS should pass
+`OrbTheme.dark` or `OrbTheme.light` from their own theme state.
+
+## Complete widget API
 
 ```dart
 ThinkingOrb(
   state: OrbState.solving,
   size: OrbSize.size20,
-  speed: 1.5,                              // multiplier on the preset's baked speed
-  paused: false,                           // freeze on the current frame
-  semanticLabel: 'Analysing repository…',  // overrides the per-state default
+  theme: OrbTheme.auto,
+  color: const Color(0xFF38BDF8),
+  speed: 1.5,
+  paused: false,
+  semanticLabel: 'Analysing repository…',
 )
 ```
 
-## Accessibility & performance
+| Property | Default | Description |
+| --- | --- | --- |
+| `state` | `OrbState.working` | Selects one of the six animation modes |
+| `size` | `OrbSize.size64` | Selects the tuned 64 px or 20 px preset |
+| `theme` | `OrbTheme.auto` | Controls the monochrome palette |
+| `color` | `null` | Overrides the monochrome palette with a custom hue |
+| `speed` | `1.0` | Multiplies the preset's baked animation speed |
+| `paused` | `false` | Freezes the current frame |
+| `semanticLabel` | Per-state label | Overrides the accessibility description |
 
-- `Semantics(image: true)` with a sensible per-state label out of the box.
-- When animations are disabled (`MediaQuery.disableAnimations` — e.g. iOS
-  Reduce Motion / Android "remove animations") a static representative
-  frame is rendered — no animation — and it still follows the live theme.
-- Every instance pauses automatically when its subtree's `TickerMode` is
-  disabled (navigated-away routes, backgrounded app), and resumes in
-  phase — all instances share one clock.
-- Plain circle fills only: no shaders, no blur filters — cheap on low-end
-  devices. Repaints are driven through a `ValueNotifier`, so animation
-  frames never rebuild the widget tree.
-- Unlike the browser original there is no automatic offscreen-scroll
-  pause (Flutter has no IntersectionObserver); lists that recycle their
-  children (`ListView.builder`) dispose offscreen orbs, which achieves
-  the same effect.
+## Accessibility and lifecycle
 
-## Power-user surface
+- The widget exposes `Semantics(image: true)` and a useful per-state label.
+- `MediaQuery.disableAnimations` renders a deterministic static frame for users
+  who request reduced motion.
+- `TickerMode` automatically mutes animation for inactive routes and
+  backgrounded widget subtrees.
+- Consumers rendering long lists should use lazy builders so offscreen orbs are
+  disposed normally.
 
-The resolved presets and raw frame painters are exported for consumers
-driving their own canvas:
+## Performance
+
+All modes draw ordinary circles on a Flutter `Canvas`. There are no image
+assets, blur filters, fragment shaders, or WebGL dependencies. Animation frames
+are delivered to `CustomPainter` through a `ValueNotifier`, so the surrounding
+widget tree is not rebuilt on every tick.
+
+The renderer retains the original project's deterministic geometry, z sorting,
+depth-aware radius, and hand-tuned density profiles.
+
+## Power-user painter API
+
+Preset resolution and raw frame painters are exported for consumers that own
+their canvas or animation clock:
 
 ```dart
 final resolved = resolvePreset(OrbState.searching, OrbSize.size64);
 final draw = modeDraws[resolved.mode]!;
-// draw(canvas, size, t * resolved.speed, dark, resolved.opts);
+
+draw(
+  canvas,
+  64,
+  timeInSeconds * resolved.speed,
+  true,
+  resolved.opts,
+  const Color(0xFF34D399), // optional
+);
 ```
 
-## Example
+Existing five-argument painter calls remain valid; the custom color is an
+optional sixth argument.
 
-The [example](example/) app is a playground showing all six states at both
-sizes with theme toggle, speed slider and play/pause:
+## Example playground
+
+The [`example`](example/) app shows every state at both sizes and includes live
+controls for speed, pause/play, light/dark mode, and color. Its grid adapts to
+the available width rather than assuming a device type.
 
 ```bash
-cd example && flutter run
+cd example
+flutter run
 ```
+
+Run it in a browser with:
+
+```bash
+flutter run -d chrome
+```
+
+## Development and verification
+
+```bash
+flutter pub get
+flutter analyze
+flutter test
+
+cd example
+flutter test
+flutter build web
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the release workflow.
+
+## Credits and provenance
+
+- Original animation design and TypeScript/Canvas implementation:
+  [Jakub Antalik](https://github.com/Jakubantalik),
+  [thinking-orbs](https://github.com/Jakubantalik/thinking-orbs).
+- Dart/Flutter engine and initial package:
+  [Leonardo Marciano](https://github.com/leofmarciano),
+  [thinking_orbs](https://github.com/leofmarciano/thinking_orbs).
+- Custom-color support, responsive playground, tests, and documentation:
+  [nathankim0](https://github.com/nathankim0).
+- Subsequent improvements are documented in the repository history and pull
+  requests.
+
+This project preserves the original MIT license notice. A community port is not
+an official endorsement by the original author unless they explicitly say so.
 
 ## License
 
-MIT — original design and animations © Jakub Antalik
-([thinking-orbs](https://github.com/Jakubantalik/thinking-orbs)); Dart/Flutter
-port © [Leonardo Marciano](https://github.com/leofmarciano).
+MIT. See [LICENSE](LICENSE) for the complete notices and terms.

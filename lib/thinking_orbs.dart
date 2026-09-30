@@ -1,5 +1,5 @@
 /// Dotted thought-orb loading indicators for AI & agent UIs — six tuned
-/// states, two sizes, auto dark/light.
+/// states, two sizes, auto dark/light, and optional custom colors.
 ///
 /// A Dart/Flutter reimplementation of Jakub Antalik's
 /// [thinking-orbs](https://github.com/Jakubantalik/thinking-orbs).

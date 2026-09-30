@@ -72,7 +72,14 @@ const double _hold = 1.4;
 const double _morphDur = 0.9;
 const double _seg = _hold + _morphDur;
 
-void drawMorph(Canvas canvas, double size, double t, bool dark, ModeOpts o) {
+void drawMorph(
+  Canvas canvas,
+  double size,
+  double t,
+  bool dark,
+  ModeOpts o, [
+  Color? color,
+]) {
   final kCount = _cycle.length;
   final tc = t % (_seg * kCount);
   final k = (tc / _seg).floor();
@@ -89,7 +96,8 @@ void drawMorph(Canvas canvas, double size, double t, bool dark, ModeOpts o) {
     final f = i / bigM;
     final a = pA(f);
     final b = pB(f);
-    pts.add(((a.$1 + (b.$1 - a.$1) * m) * sprd, (a.$2 + (b.$2 - a.$2) * m) * sprd));
+    pts.add(
+        ((a.$1 + (b.$1 - a.$1) * m) * sprd, (a.$2 + (b.$2 - a.$2) * m) * sprd));
   }
   final lens = <double>[];
   var total = 0.0;
@@ -130,5 +138,5 @@ void drawMorph(Canvas canvas, double size, double t, bool dark, ModeOpts o) {
       white: 0.1,
     ));
   }
-  paintDots(canvas, dots, dark, o['rMin'] ?? 0.3);
+  paintDots(canvas, dots, dark, o['rMin'] ?? 0.3, color);
 }

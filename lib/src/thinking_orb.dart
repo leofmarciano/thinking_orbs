@@ -39,6 +39,7 @@ class ThinkingOrb extends StatefulWidget {
     this.state = OrbState.working,
     this.size = OrbSize.size64,
     this.theme = OrbTheme.auto,
+    this.color,
     this.speed = 1,
     this.paused = false,
     this.semanticLabel,
@@ -50,8 +51,16 @@ class ThinkingOrb extends StatefulWidget {
   /// Tuned size preset — 64 or 20 logical px. Defaults to [OrbSize.size64].
   final OrbSize size;
 
-  /// Theme mode; [OrbTheme.auto] detects from the enclosing theme.
+  /// Monochrome theme mode; [OrbTheme.auto] follows platform brightness.
+  /// Ignored when [color] is non-null.
   final OrbTheme theme;
+
+  /// Optional foreground color for the dots.
+  ///
+  /// When set, this color takes precedence over [theme]. Depth shading is
+  /// preserved by varying the dots' opacity instead of flattening them to a
+  /// single solid color.
+  final Color? color;
 
   /// Animation speed multiplier on top of the preset's baked speed.
   final double speed;
@@ -66,7 +75,8 @@ class ThinkingOrb extends StatefulWidget {
   State<ThinkingOrb> createState() => _ThinkingOrbState();
 }
 
-class _ThinkingOrbState extends State<ThinkingOrb> with SingleTickerProviderStateMixin {
+class _ThinkingOrbState extends State<ThinkingOrb>
+    with SingleTickerProviderStateMixin {
   late final Ticker _ticker;
 
   /// Current animation time (already multiplied by the effective speed),
@@ -131,7 +141,9 @@ class _ThinkingOrbState extends State<ThinkingOrb> with SingleTickerProviderStat
   @override
   void didUpdateWidget(ThinkingOrb old) {
     super.didUpdateWidget(old);
-    if (old.state != widget.state || old.size != widget.size || old.speed != widget.speed) {
+    if (old.state != widget.state ||
+        old.size != widget.size ||
+        old.speed != widget.speed) {
       _resolve();
       _t.value = _nowSeconds() * _effSpeed;
     }
@@ -165,6 +177,7 @@ class _ThinkingOrbState extends State<ThinkingOrb> with SingleTickerProviderStat
               staticT: reduced ? 0.6 : null,
               size: size,
               dark: dark,
+              color: widget.color,
               draw: modeDraws[_resolved.mode]!,
               opts: _resolved.opts,
             ),
@@ -181,6 +194,7 @@ class _OrbPainter extends CustomPainter {
     required this.staticT,
     required this.size,
     required this.dark,
+    required this.color,
     required this.draw,
     required this.opts,
   })  : _t = t,
@@ -190,6 +204,7 @@ class _OrbPainter extends CustomPainter {
   final double? staticT;
   final double size;
   final bool dark;
+  final Color? color;
   final ModeDraw draw;
   final Map<String, double> opts;
 
@@ -197,13 +212,14 @@ class _OrbPainter extends CustomPainter {
   void paint(Canvas canvas, Size _) {
     canvas.save();
     canvas.clipRect(Rect.fromLTWH(0, 0, size, size));
-    draw(canvas, size, staticT ?? _t.value, dark, opts);
+    draw(canvas, size, staticT ?? _t.value, dark, opts, color);
     canvas.restore();
   }
 
   @override
   bool shouldRepaint(_OrbPainter old) {
     return old.dark != dark ||
+        old.color != color ||
         old.draw != draw ||
         old.opts != opts ||
         old.staticT != staticT ||
