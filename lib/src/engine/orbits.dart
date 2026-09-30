@@ -3,19 +3,11 @@
 // doing the work.
 
 import 'dart:math' as math;
-import 'dart:ui';
 
 import 'core.dart';
 import 'profiles.dart';
 
-void drawOrbits(
-  Canvas canvas,
-  double size,
-  double t,
-  bool dark,
-  ModeOpts o, [
-  Color? color,
-]) {
+OrbFrame frameOrbits(double size, double t, ModeOpts o) {
   final cx = size / 2;
   final cy = size / 2;
   final r = (size / 2) * 0.82;
@@ -23,9 +15,11 @@ void drawOrbits(
   final rs = radiusScale(size, o['rsPow'] ?? 0.6);
 
   final dots = <Dot>[];
-  final orbitN = (o['orbitN'] ?? 12).round();
-  final ghostN = (o['ghostN'] ?? 40).round();
-  final particles = (o['particles'] ?? 3).round();
+  // count opts stay raw doubles so `i < n` iterates exactly like the JS
+  // loop (ceil for non-integers) — do not .round() here
+  final orbitN = o['orbitN'] ?? 12;
+  final ghostN = o['ghostN'] ?? 40;
+  final particles = o['particles'] ?? 3;
 
   // orbits: each a tilted circle — a ghost path + running particles
   for (var orb = 0; orb < orbitN; orb++) {
@@ -86,5 +80,5 @@ void drawOrbits(
       ));
     }
   }
-  paintDots(canvas, dots, dark, o['rMin'] ?? 0.3, color);
+  return finalizeFrame(dots, const [], o['rMin'] ?? 0.3);
 }

@@ -49,6 +49,17 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('renders cards for the connecting, weaving and breathing states',
+      (tester) async {
+    await pumpAtSize(tester, const Size(1200, 900));
+
+    for (final state in ['connecting', 'weaving', 'breathing']) {
+      expect(find.byKey(ValueKey('orb-card-$state')), findsOneWidget);
+      expect(find.text(state), findsOneWidget);
+    }
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('play, pause, theme and color controls update the demo', (
     tester,
   ) async {

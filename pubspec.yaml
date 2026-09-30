@@ -1,12 +1,22 @@
 name: thinking_orbs
 description: >-
-  Dotted thought-orb loading indicators for AI & agent UIs — six tuned states,
-  two sizes, auto dark/light, and custom colors. A Dart/Flutter
-  reimplementation of Jakub Antalik's thinking-orbs.
-version: 0.1.0
+  Dotted thought-orb loading indicators for AI & agent UIs — nine tuned states,
+  two sizes, auto dark/light, and custom colors. A Flutter port of Jakub
+  Antalik's thinking-orbs.
+version: 0.2.0
 homepage: https://github.com/leofmarciano/thinking_orbs
 repository: https://github.com/leofmarciano/thinking_orbs
 issue_tracker: https://github.com/leofmarciano/thinking_orbs/issues
+
+screenshots:
+  - description: >-
+      All nine orb states on dark and light backgrounds at the 64 px
+      preset.
+    path: doc/preview.png
+  - description: >-
+      All nine orb states animating at the 64 px preset on a dark
+      background.
+    path: doc/preview.gif
 
 environment:
   sdk: ">=3.0.0 <4.0.0"

@@ -3,7 +3,6 @@
 // motion, then hand off to the shared z-sorted painter.
 
 import 'dart:math' as math;
-import 'dart:ui';
 
 import 'core.dart';
 import 'profiles.dart';
@@ -29,14 +28,19 @@ class _SolveCycle {
   _SolveCycle(this.amount, this.active);
 
   final List<double> amount;
-  final int active;
+  final double active;
 }
 
-_SolveCycle _solveCycle(double time, int count, double slotDur, double rest) {
+_SolveCycle _solveCycle(
+    double time, double count, double slotDur, double rest) {
   final cyc = 2 * count * slotDur + rest;
-  final tc = time % cyc;
-  final amount = List<double>.filled(count, 0);
-  var active = -1;
+  // JS % is truncated (keeps the dividend's sign); Dart's % is Euclidean
+  // and would wrap a negative t into the cycle instead of idling on it
+  final tc = time.remainder(cyc);
+  // count <= 0 is outside upstream's domain (new Array throws there);
+  // clamp instead of replicating the crash
+  final amount = List<double>.filled(math.max(0, count.ceil()), 0);
+  var active = -1.0;
   if (tc < 2 * count * slotDur) {
     final slot = (tc / slotDur).floor();
     final p = (tc - slot * slotDur) / slotDur;
@@ -46,14 +50,19 @@ _SolveCycle _solveCycle(double time, int count, double slotDur, double rest) {
       for (var i = 0; i < slot; i++) {
         amount[i] = 1;
       }
-      amount[slot] = ep;
-      active = slot;
+      // a negative tc leaves every amount 0 in JS: amount[-k] is a dead
+      // property write there — skip it rather than throw
+      if (slot >= 0) amount[slot] = ep;
+      active = slot.toDouble();
     } else {
       final u = 2 * count - 1 - slot;
       for (var i = 0; i < u; i++) {
         amount[i] = 1;
       }
-      amount[u] = 1 - ep;
+      // amount[u] is an element write only for a whole non-negative u
+      if (u >= 0 && u == u.truncateToDouble()) {
+        amount[u.toInt()] = 1 - ep;
+      }
       active = u;
     }
   }
@@ -93,7 +102,7 @@ _SolveCycle _solveCycle(double time, int count, double slotDur, double rest) {
   return (x, y, z, inActive);
 }
 
-List<_Move> _makeMoves(int count) {
+List<_Move> _makeMoves(double count) {
   final moves = <_Move>[];
   for (var i = 0; i < count; i++) {
     final axis = math.min(2, (hashD(i.toDouble(), 2.3) * 3).floor());
@@ -106,14 +115,7 @@ List<_Move> _makeMoves(int count) {
 
 // --- Globe: lat/long field, a scan meridian sweeps — searching --------
 
-void drawGlobe(
-  Canvas canvas,
-  double size,
-  double t,
-  bool dark,
-  ModeOpts o, [
-  Color? color,
-]) {
+OrbFrame frameGlobe(double size, double t, ModeOpts o) {
   const spin = 0.5;
   final cx = size / 2;
   final cy = size / 2;
@@ -126,13 +128,18 @@ void drawGlobe(
   final dimBase = o['dimBase'] ?? 1;
 
   final dots = <Dot>[];
-  final latRings = (o['latRings'] ?? 17).round();
+  // count opts stay raw doubles so `li <= n` iterates exactly like the
+  // JS loop (floor(n)+1 for non-integers) — do not .round() here
+  final latRings = o['latRings'] ?? 17;
   final lonDensity = o['lonDensity'] ?? 44;
   for (var li = 0; li <= latRings; li++) {
     final lat = -math.pi / 2 + (li / latRings) * math.pi;
     final cosLat = math.cos(lat);
     final sinLat = math.sin(lat);
-    final lonCount = math.max(1, (cosLat.abs() * lonDensity).round());
+    // latRings = 0 makes lat (and thus lonF) NaN; upstream's lj < NaN
+    // yields no dots — map NaN to 0 rather than let .round() throw
+    final lonF = cosLat.abs() * lonDensity;
+    final lonCount = lonF.isNaN ? 0 : math.max(1, lonF.round());
     for (var lj = 0; lj < lonCount; lj++) {
       final lon = (lj / lonCount) * 2 * math.pi;
       final (px, py, z) =
@@ -155,36 +162,30 @@ void drawGlobe(
       ));
     }
   }
-  paintDots(canvas, dots, dark, o['rMin'] ?? 0.3, color);
+  return finalizeFrame(dots, const [], o['rMin'] ?? 0.3);
 }
 
 // --- Rubik: bands twist in quarter turns, scramble → solve — solving --
 
-void drawRubik(
-  Canvas canvas,
-  double size,
-  double t,
-  bool dark,
-  ModeOpts o, [
-  Color? color,
-]) {
+OrbFrame frameRubik(double size, double t, ModeOpts o) {
   final cx = size / 2;
   final cy = size / 2;
   final bigR = (size / 2) * 0.82;
   final pt = makeProj(t * 0.55, 0.35 + 0.1 * math.sin(t * 0.9), cx, cy, bigR);
   final rs = radiusScale(size, o['rsPow'] ?? 0.6);
-  final moveCount = (o['moveCount'] ?? 14).round();
+  final moveCount = o['moveCount'] ?? 14;
   final moves = _makeMoves(moveCount);
   final sc = _solveCycle(t, moveCount, 0.42, 1.2);
 
   final dots = <Dot>[];
-  final latRings = (o['latRings'] ?? 15).round();
+  final latRings = o['latRings'] ?? 15;
   final lonDensity = o['lonDensity'] ?? 40;
   for (var li = 0; li <= latRings; li++) {
     final lat = -math.pi / 2 + (li / latRings) * math.pi;
     final cosLat = math.cos(lat);
     final sinLat = math.sin(lat);
-    final lonCount = math.max(1, (cosLat.abs() * lonDensity).round());
+    final lonF = cosLat.abs() * lonDensity;
+    final lonCount = lonF.isNaN ? 0 : math.max(1, lonF.round());
     for (var lj = 0; lj < lonCount; lj++) {
       final lon = (lj / lonCount) * 2 * math.pi;
       final (x, y, z, inActive) = _applyMoves(
@@ -209,19 +210,12 @@ void drawRubik(
       ));
     }
   }
-  paintDots(canvas, dots, dark, o['rMin'] ?? 0.3, color);
+  return finalizeFrame(dots, const [], o['rMin'] ?? 0.3);
 }
 
 // --- Wave: a waveform rolls through the rings — listening -------------
 
-void drawWave(
-  Canvas canvas,
-  double size,
-  double t,
-  bool dark,
-  ModeOpts o, [
-  Color? color,
-]) {
+OrbFrame frameWave(double size, double t, ModeOpts o) {
   final cx = size / 2;
   final cy = size / 2;
   // 0.76 base × 1.15 — the undulation pulls the sphere inward, so wave read
@@ -231,7 +225,7 @@ void drawWave(
   final rs = radiusScale(size, o['rsPow'] ?? 0.6);
 
   final dots = <Dot>[];
-  final rings = (o['rings'] ?? 15).round();
+  final rings = o['rings'] ?? 15;
   final lonDensity = o['lonDensity'] ?? 40;
   for (var ri = 0; ri <= rings; ri++) {
     final lat = -math.pi / 2 + (ri / rings) * math.pi;
@@ -241,7 +235,8 @@ void drawWave(
     final w = 0.62 * math.sin(t * 2.1 - ri * 0.52) +
         0.38 * math.sin(t * 1.27 + ri * 0.83);
     final rr = bigR * (0.88 + 0.105 * w);
-    final lonCount = math.max(1, (cosLat.abs() * lonDensity).round());
+    final lonF = cosLat.abs() * lonDensity;
+    final lonCount = lonF.isNaN ? 0 : math.max(1, lonF.round());
     for (var lj = 0; lj < lonCount; lj++) {
       final lon = (lj / lonCount) * 2 * math.pi;
       final (px, py, z) = pt(
@@ -262,5 +257,5 @@ void drawWave(
       ));
     }
   }
-  paintDots(canvas, dots, dark, o['rMin'] ?? 0.3, color);
+  return finalizeFrame(dots, const [], o['rMin'] ?? 0.3);
 }

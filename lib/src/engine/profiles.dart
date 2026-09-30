@@ -16,7 +16,13 @@ const List<(String, String)> _countPairs = [
   ('rings', 'lonDensity'),
   ('lanes', 'segs'),
 ];
-const List<String> _countKeys = ['orbitN', 'ghostN'];
+const List<String> _countKeys = [
+  'orbitN',
+  'ghostN',
+  'nodeN',
+  'strandN',
+  'signals',
+];
 const List<String> _iconDensityKeys = ['iconD'];
 
 // Every key that sets a dot's rendered radius — scaling all of them keeps
@@ -29,6 +35,8 @@ const List<String> _radiusKeys = [
   'ghostR',
   'partR',
   'partRDepth',
+  'nodeR',
+  'nodeRDepth',
 ];
 
 ModeOpts scaleCounts(ModeOpts opts, double scale) {
@@ -47,7 +55,9 @@ ModeOpts scaleCounts(ModeOpts opts, double scale) {
   }
   for (final k in _countKeys) {
     final v = out[k];
-    if (v != null && !done.contains(k)) {
+    // 0 means the mode opted out of that layer entirely (ring has no
+    // ghost sphere) — scaling must not resurrect it as a single stray dot
+    if (v != null && v != 0 && !done.contains(k)) {
       out[k] = math.max(1, (v * scale).round()).toDouble();
     }
   }
@@ -114,10 +124,41 @@ const Map<String, ModeOpts> baseProfiles = {
     'rsPow': 0.6,
     'rMin': 0.3,
   },
+  'web': {
+    'nodeN': 30,
+    'thr': 0.72,
+    'signals': 5,
+    'nodeR': 1.4,
+    'nodeRDepth': 1.8,
+    'lineW': 0.8,
+    'rsPow': 0.6,
+    'rMin': 0.3,
+  },
+  'braid': {
+    'strandN': 52,
+    'turns': 3.0,
+    'ghostN': 150,
+    'rBase': 1.2,
+    'rDepth': 1.8,
+    'rsPow': 0.6,
+    'rMin': 0.3,
+  },
   'ribbon': {
     'lanes': 5,
     'segs': 88,
     'ghostN': 150,
+    'rBase': 1.1,
+    'rDepth': 1.7,
+    'rsPow': 0.6,
+    'rMin': 0.3,
+  },
+  // ring shares ribbon's painter; faceOn cancels the camera tilt and moves
+  // the undulation onto the radius, and there is no ghost sphere behind it
+  'ring': {
+    'lanes': 5,
+    'segs': 88,
+    'ghostN': 0,
+    'faceOn': 1,
     'rBase': 1.1,
     'rDepth': 1.7,
     'rsPow': 0.6,

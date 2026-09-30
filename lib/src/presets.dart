@@ -1,4 +1,4 @@
-// The shipped tunings: six states × two sizes, baked from the original
+// The shipped tunings: nine states × two sizes, baked from the original
 // inkform mini-page tuning session. `count`/`size` are multipliers over
 // the base fine profiles; `speed` multiplies the shared clock. Resolved
 // once per (state, size) pair and cached — the render loop sees plain
@@ -13,12 +13,19 @@ const Map<OrbState, String> stateToMode = {
   OrbState.searching: 'globe',
   OrbState.solving: 'rubik',
   OrbState.listening: 'wave',
+  OrbState.connecting: 'web',
+  OrbState.weaving: 'braid',
   OrbState.composing: 'ribbon',
+  OrbState.breathing: 'ring',
   OrbState.shaping: 'morph',
 };
 
 class _Preset {
-  const _Preset({required this.speed, required this.count, required this.size, this.extra});
+  const _Preset(
+      {required this.speed,
+      required this.count,
+      required this.size,
+      this.extra});
 
   final double speed;
   final double count;
@@ -55,6 +62,14 @@ const Map<String, Map<OrbSize, _Preset>> _presets = {
     OrbSize.size64: _Preset(speed: 4.388, count: 0.341, size: 1),
     OrbSize.size20: _Preset(speed: 3.998, count: 0.105, size: 1.6),
   },
+  'web': {
+    OrbSize.size64: _Preset(speed: 3.315, count: 1.35, size: 0.95),
+    OrbSize.size20: _Preset(speed: 6.63, count: 0.25, size: 1.52),
+  },
+  'braid': {
+    OrbSize.size64: _Preset(speed: 1.625, count: 0.5, size: 1),
+    OrbSize.size20: _Preset(speed: 2.75, count: 0.1125, size: 1.36),
+  },
   'ribbon': {
     OrbSize.size64: _Preset(
       speed: 2.34,
@@ -69,9 +84,25 @@ const Map<String, Map<OrbSize, _Preset>> _presets = {
       extra: {'spin': 0, 'bandMul': 4.94, 'wobMul': 1},
     ),
   },
+  'ring': {
+    OrbSize.size64: _Preset(
+      speed: 3.24,
+      count: 0.25,
+      size: 0.956,
+      extra: {'spin': 0, 'bandMul': 3.627, 'wobMul': 0.368},
+    ),
+    OrbSize.size20: _Preset(
+      speed: 3.78,
+      count: 0.028,
+      size: 1.622,
+      extra: {'spin': 0, 'bandMul': 3.968, 'wobMul': 0.565},
+    ),
+  },
   'morph': {
-    OrbSize.size64: _Preset(speed: 2.405, count: 0.54, size: 0.395, extra: {'spread': 1.45}),
-    OrbSize.size20: _Preset(speed: 2.08, count: 0.53, size: 1.011, extra: {'spread': 1.45}),
+    OrbSize.size64: _Preset(
+        speed: 2.405, count: 0.702, size: 0.395, extra: {'spread': 1.45}),
+    OrbSize.size20:
+        _Preset(speed: 2.08, count: 0.53, size: 1.011, extra: {'spread': 1.45}),
   },
 };
 

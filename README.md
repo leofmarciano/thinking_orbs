@@ -4,8 +4,10 @@
 [![Flutter](https://img.shields.io/badge/Flutter-3.10%2B-02569B?logo=flutter)](https://flutter.dev)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
+![All nine orb states animating on a dark background](https://raw.githubusercontent.com/leofmarciano/thinking_orbs/main/doc/preview.gif)
+
 Dotted thought-orb loading indicators for AI and agent interfaces. The package
-ships six hand-tuned animations at two purpose-built sizes, rendered with a
+ships nine hand-tuned animations at two purpose-built sizes, rendered with a
 lightweight Flutter `CustomPainter` on a transparent background.
 
 This is a faithful Dart/Flutter reimplementation of
@@ -17,8 +19,8 @@ initial package were created by
 
 ## Highlights
 
-- Six distinct states: working, searching, solving, listening, composing, and
-  shaping.
+- Nine distinct states: working, searching, solving, listening, connecting,
+  weaving, composing, breathing, and shaping.
 - Separate 64 px and 20 px tunings; the inline orb is not merely a scaled-down
   copy.
 - Automatic light/dark monochrome rendering plus optional custom colors.
@@ -42,7 +44,7 @@ Or add it manually:
 
 ```yaml
 dependencies:
-  thinking_orbs: ^0.1.0
+  thinking_orbs: ^0.2.0
 ```
 
 Then import the package:
@@ -50,9 +52,6 @@ Then import the package:
 ```dart
 import 'package:thinking_orbs/thinking_orbs.dart';
 ```
-
-> Custom `color` support is currently available on this development branch and
-> is intended for the next pub.dev release.
 
 ## Quick start
 
@@ -75,7 +74,10 @@ avatar, status row, button, card, or overlay.
 | `OrbState.searching` | A scan meridian sweeps a dotted globe | Search and retrieval |
 | `OrbState.solving` | Bands scramble and click back into place | Reasoning and solving |
 | `OrbState.listening` | A waveform rolls through latitude rings | Voice and audio input |
+| `OrbState.connecting` | A constellation of nodes wires itself with travelling signal packets | Handshakes and tool calls |
+| `OrbState.weaving` | Three strands plait around a ghost sphere | Combining sources or ideas |
 | `OrbState.composing` | An undulating multi-band ribbon | Writing and generation |
+| `OrbState.breathing` | A face-on ring slowly pulses | Idle thinking |
 | `OrbState.shaping` | Circle → triangle → square outline morph | Structuring and design |
 
 ```dart
@@ -83,7 +85,10 @@ const ThinkingOrb(state: OrbState.working);
 const ThinkingOrb(state: OrbState.searching);
 const ThinkingOrb(state: OrbState.solving);
 const ThinkingOrb(state: OrbState.listening);
+const ThinkingOrb(state: OrbState.connecting);
+const ThinkingOrb(state: OrbState.weaving);
 const ThinkingOrb(state: OrbState.composing);
+const ThinkingOrb(state: OrbState.breathing);
 const ThinkingOrb(state: OrbState.shaping);
 ```
 
@@ -160,7 +165,7 @@ ThinkingOrb(
 
 | Property | Default | Description |
 | --- | --- | --- |
-| `state` | `OrbState.working` | Selects one of the six animation modes |
+| `state` | `OrbState.working` | Selects one of the nine animation modes |
 | `size` | `OrbSize.size64` | Selects the tuned 64 px or 20 px preset |
 | `theme` | `OrbTheme.auto` | Controls the monochrome palette |
 | `color` | `null` | Overrides the monochrome palette with a custom hue |
@@ -188,27 +193,75 @@ widget tree is not rebuilt on every tick.
 The renderer retains the original project's deterministic geometry, z sorting,
 depth-aware radius, and hand-tuned density profiles.
 
-## Power-user painter API
+## Geometry and painter API
 
-Preset resolution and raw frame painters are exported for consumers that own
-their canvas or animation clock:
+For consumers that own their canvas, animation clock, or renderer, the engine
+is exposed in two layers. `resolvePreset` maps a public `(state, size)` pair
+to its internal mode key, clock speed, and fully-scaled options:
 
 ```dart
 final resolved = resolvePreset(OrbState.searching, OrbSize.size64);
+// resolved.mode — engine key ('globe'), also reachable via stateToMode
+// resolved.speed — clock multiplier for this preset
+// resolved.opts  — ModeOpts (Map<String, double>) for the frame builders
+```
+
+**`modeFrames`** is the pure-geometry layer: a `Map<String, ModeFrame>` of
+`OrbFrame Function(double size, double t, ModeOpts opts)` builders with no
+`Canvas` dependency. A frame is a finished set of draw instructions —
+`frame.dots` is already z-sorted far→near and radius-clamped, and
+`frame.lines` (edges, e.g. the `connecting` web) paints first:
+
+```dart
+final frame = modeFrames[resolved.mode]!(
+  64,                            // logical size in px
+  elapsedSeconds * resolved.speed,
+  resolved.opts,
+);
+
+for (final line in frame.lines) {
+  // line.x1, line.y1 → line.x2, line.y2 — endpoints;
+  // line.w — stroke width; line.white / line.a — ink strength and alpha
+}
+for (final dot in frame.dots) {
+  // dot.x, dot.y — position; dot.r — radius;
+  // dot.white — ink strength (mirrored on dark themes); dot.a — extra alpha
+}
+```
+
+This layer is what the golden-vector parity tests compare numerically against
+the upstream TypeScript engine, so its output is a stable, renderer-agnostic
+contract.
+
+**`modeDraws`** is the matching `Map<String, ModeDraw>` of `Canvas` painters
+built on top of `modeFrames` — the same functions the widget calls:
+
+```dart
 final draw = modeDraws[resolved.mode]!;
 
 draw(
   canvas,
   64,
-  timeInSeconds * resolved.speed,
-  true,
+  elapsedSeconds * resolved.speed,
+  true, // dark palette
   resolved.opts,
-  const Color(0xFF34D399), // optional
+  const Color(0xFF34D399), // optional custom color
 );
 ```
 
-Existing five-argument painter calls remain valid; the custom color is an
-optional sixth argument.
+The custom color is an optional sixth argument; five-argument painter calls
+remain valid.
+
+The engine's shared helpers are exported as well for consumers composing
+custom frames by hand: `finalizeFrame` (cull, radius-clamp, z-sort raw
+geometry into an `OrbFrame`), `paintFrame`/`paintDots`/`paintLines` (the
+ink-to-canvas passes), `makeProj` (the shared yaw/tilt projector returning a
+`Projected` triple via a `Projector`), and `radiusScale` (the sub-linear dot
+radius scaling).
+
+All frame builders accept any finite `t` — negative values render the
+animation's periodic extension rather than throwing — and tolerate degenerate
+or non-integer counts.
 
 ## Example playground
 
@@ -232,7 +285,7 @@ flutter run -d chrome
 ```bash
 flutter pub get
 flutter analyze
-flutter test
+flutter test   # includes parity_test.dart against upstream golden vectors
 
 cd example
 flutter test

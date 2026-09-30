@@ -17,6 +17,7 @@ example/build/
 # The original TypeScript/React source this package ports from — kept
 # in the workspace for reference, never part of the published archive.
 thinking-orbs/
+.upstream/
 
 # Platform scaffolding isn't needed to render pub.dev's Example tab
 # (which only reads example/lib + example/pubspec.yaml) — keep the

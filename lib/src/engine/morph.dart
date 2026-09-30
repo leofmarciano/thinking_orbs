@@ -7,7 +7,6 @@
 // circle fills only, fully cross-platform.
 
 import 'dart:math' as math;
-import 'dart:ui';
 
 import 'core.dart';
 import 'profiles.dart';
@@ -63,27 +62,34 @@ final _Path _square = _polyPath([
 ]);
 final List<_Path> _cycle = [_circle, _triangle, _square];
 
-// low floor keeps sparse outlines possible while never degenerating
+// low floor keeps sparse outlines possible while never degenerating.
+// NaN density (upstream yields an empty frame via `i < NaN`) maps to 0.
 int _morphN(double d) {
-  return math.max(6, (34 * d).round());
+  return d.isNaN ? 0 : math.max(6, (34 * d).round());
 }
 
 const double _hold = 1.4;
 const double _morphDur = 0.9;
 const double _seg = _hold + _morphDur;
 
-void drawMorph(
-  Canvas canvas,
-  double size,
-  double t,
-  bool dark,
-  ModeOpts o, [
-  Color? color,
-]) {
+// This state was tuned in inkform, which paints it through a blur +
+// threshold "goo" filter; we draw plain circles instead, since filter
+// primitives are not safe to rely on across renderers. The dot GEOMETRY
+// is identical either way — the threshold just yields a hard edge where a
+// plain fill has an antialiased one, so these dots read a touch softer
+// than inkform's. Don't "correct" for that by shrinking the radius: it
+// makes the mark genuinely smaller than the tuning.
+OrbFrame frameMorph(double size, double t, ModeOpts o) {
   final kCount = _cycle.length;
-  final tc = t % (_seg * kCount);
-  final k = (tc / _seg).floor();
-  final local = tc - k * _seg;
+  // JS % is truncated (keeps the dividend's sign): a negative t yields a
+  // negative shape index just like upstream — but upstream then crashes
+  // on CYCLE[-1]. We keep the truncated remainder (positive t is
+  // bit-identical) and wrap a negative phase into the cycle, i.e. render
+  // the animation's periodic extension instead of throwing.
+  final tc = t.remainder(_seg * kCount);
+  final tcw = tc < 0 ? tc + _seg * kCount : tc;
+  final k = (tcw / _seg).floor();
+  final local = tcw - k * _seg;
   final m = local > _hold ? _smoothE((local - _hold) / _morphDur) : 0.0;
   final sprd = o['spread'] ?? 1;
 
@@ -138,5 +144,5 @@ void drawMorph(
       white: 0.1,
     ));
   }
-  paintDots(canvas, dots, dark, o['rMin'] ?? 0.3, color);
+  return finalizeFrame(dots, const [], o['rMin'] ?? 0.3);
 }

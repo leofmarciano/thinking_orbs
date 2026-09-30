@@ -1,5 +1,5 @@
 // Playground for the thinking_orbs package — mirrors the original
-// thinking-orbs demo: all six states at both tuned sizes, with theme
+// thinking-orbs demo: all nine states at both tuned sizes, with theme
 // toggle, custom colors, speed slider and play/pause.
 
 import 'package:flutter/material.dart';
@@ -27,7 +27,10 @@ class _OrbsPlaygroundAppState extends State<OrbsPlaygroundApp> {
     OrbState.searching: 'searching',
     OrbState.solving: 'solving',
     OrbState.listening: 'listening',
+    OrbState.connecting: 'connecting',
+    OrbState.weaving: 'weaving',
     OrbState.composing: 'composing',
+    OrbState.breathing: 'breathing',
     OrbState.shaping: 'shaping',
   };
 

@@ -1,6 +1,6 @@
 # thinking_orbs example
 
-Responsive playground for all six `thinking_orbs` states at both tuned sizes.
+Responsive playground for all nine `thinking_orbs` states at both tuned sizes.
 It includes live speed, pause, light/dark, and custom-color controls.
 
 ```bash

@@ -18,7 +18,10 @@ const Map<OrbState, String> _labels = {
   OrbState.searching: 'Searching…',
   OrbState.solving: 'Solving…',
   OrbState.listening: 'Listening…',
+  OrbState.connecting: 'Connecting…',
+  OrbState.weaving: 'Weaving…',
   OrbState.composing: 'Composing…',
+  OrbState.breathing: 'Thinking…',
   OrbState.shaping: 'Shaping…',
 };
 

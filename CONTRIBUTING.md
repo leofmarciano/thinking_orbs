@@ -27,7 +27,7 @@ This creates `thinking_orbs` on pub.dev and makes you its owner/uploader.
 2. Under **Automated publishing**, enable **Publishing from GitHub
    Actions**.
 3. Repository: `leofmarciano/thinking_orbs`.
-4. Tag pattern: `v{{version}}` (matches tags like `v0.1.1`).
+4. Tag pattern: `v{{version}}` (matches tags like `v0.2.0`).
 5. (Optional, recommended) Restrict publishing to a GitHub **Environment**
    named `pub.dev` — create it under repo Settings → Environments, add
    required reviewers, and add `environment: pub.dev` to the `publish`
@@ -41,8 +41,8 @@ This creates `thinking_orbs` on pub.dev and makes you its owner/uploader.
    `Publish to pub.dev` workflow:
 
    ```bash
-   git tag v0.1.1
-   git push origin v0.1.1
+   git tag v0.2.0
+   git push origin v0.2.0
    ```
 
 3. Watch the run under the repo's **Actions** tab (approve the
